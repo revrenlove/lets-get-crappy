@@ -6,10 +6,13 @@ public class Shooter
 {
     private readonly Random _random;
 
-    internal Shooter(Random random)
+    internal Shooter(Random random, string name)
     {
         _random = random;
+        Name = name;
     }
+
+    public string Name { get; }
 
     public Roll Throw()
     {

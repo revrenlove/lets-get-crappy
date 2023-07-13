@@ -9,8 +9,8 @@ public class ShooterFactory
         _random = random;
     }
 
-    public Shooter CreateShooter()
+    public Shooter CreateShooter(string name)
     {
-        return new Shooter(_random);
+        return new Shooter(_random, name);
     }
 }

@@ -20,13 +20,13 @@ public class Die
     public string Name { get; }
     public char Symbol { get; }
 
-    public static Dictionary<int, Die> DieByValue = new()
+    public static readonly Dictionary<int, Die> DieByValue = new()
     {
-        {1, Die.One},
-        {2, Die.Two},
-        {3, Die.Three},
-        {4, Die.Four},
-        {5, Die.Five},
-        {6, Die.Six},
+        {1, One},
+        {2, Two},
+        {3, Three},
+        {4, Four},
+        {5, Five},
+        {6, Six},
     };
 }

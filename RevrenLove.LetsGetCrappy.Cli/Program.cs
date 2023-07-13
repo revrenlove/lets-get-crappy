@@ -7,6 +7,7 @@ HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddCrappyEngine();
 builder.Services.AddSingleton<GameRunner>();
+builder.Services.AddSingleton<RandomNameGenerator>();
 
 using var host = builder.Build();
 
