@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using RevrenLove.LetsGetCrappy.Engine;
 using RevrenLove.LetsGetCrappy.Engine.Actors;
 using RevrenLove.LetsGetCrappy.Engine.Models;
 
@@ -5,50 +7,39 @@ namespace RevrenLove.LetsGetCrappy.Cli;
 
 public class GameRunner
 {
-    private readonly ShooterFactory _shooterFactory;
-    private readonly RandomNameGenerator _randomNameGenerator;
+    private readonly PlayerFactory _playerFactory;
+    private readonly RollHandler _rollHandler;
+    private readonly ILogger<GameRunner> _logger;
 
     public GameRunner(
-        ShooterFactory shooterFactory,
-        RandomNameGenerator randomNameGenerator)
+        PlayerFactory playerFactory,
+        RollHandler rollHandler,
+        ILogger<GameRunner> logger)
     {
-        _shooterFactory = shooterFactory;
-        _randomNameGenerator = randomNameGenerator;
+        _playerFactory = playerFactory;
+        _rollHandler = rollHandler;
+        _logger = logger;
     }
 
     public void Execute()
     {
-        Console.WriteLine("Let's Get Crappy, Y'all!!!");
+        _logger.LogInformation("Let's Get Crappy, Y'all!!! - Program starting...");
 
-        var shooterName = _randomNameGenerator.Generate();
-        var shooter = _shooterFactory.CreateShooter(shooterName);
+        // TODO: Prompt for wallet input
+        var player = _playerFactory.CreatePlayer(10000);
 
         while (true)
         {
-
-
-            if (!PlayRound(shooter))
+            if (!PlayRound(player))
             {
-                Console.WriteLine();
-                Console.WriteLine("---------------------------------------------------------");
-                Console.WriteLine();
+                player = _playerFactory.CreatePlayer(10000);
 
-                shooterName = _randomNameGenerator.Generate(shooterName);
-                shooter = _shooterFactory.CreateShooter(shooterName);
-
-                Console.WriteLine($"{shooterName} is up! Play again? Press [Space Bar]");
+                _logger.LogInformation("{PlayerName} is up! Play again? Press [Space Bar]", player.Name);
             }
             else
             {
-                Console.WriteLine();
-                Console.WriteLine("---------------------------------------------------------");
-                Console.WriteLine();
-
-                Console.WriteLine($"{shooterName} is up, again! Play again? Press [Space Bar]");
+                _logger.LogInformation("{PlayerName} is up, again! Play again? Press [Space Bar]", player.Name);
             }
-
-            Console.WriteLine();
-            Console.WriteLine("//////////////////////////////////////////////////////////////");
 
             if (Console.ReadKey().Key != ConsoleKey.Spacebar)
             {
@@ -57,75 +48,55 @@ public class GameRunner
         }
     }
 
-    public static bool PlayRound(Shooter shooter)
+    /// <summary>
+    /// TODO: This will need to be reworked...
+    /// Plays a round with the given `player`
+    /// </summary>
+    /// <param name="player"></param>
+    /// <returns>`True` if `player` will be shooting the next round, `False` otherwise.</returns>
+    public bool PlayRound(Player player)
     {
-        Console.WriteLine();
-        Console.WriteLine("=========================================================");
-        Console.WriteLine($"{shooter.Name} is starting a new round!");
-        Console.WriteLine("=========================================================");
-        Console.WriteLine();
-        Console.WriteLine("---------------------------------------------------------");
-        Console.WriteLine("Here comes the come out...");
-        Console.WriteLine("---------------------------------------------------------");
+        _logger.LogInformation("{PlayerName} is starting a new round!", player.Name);
 
-        var roll = RollComeOut(shooter);
+        var roll = RollComeOutPhase(player);
         while (!roll.IsPoint)
         {
-            Console.WriteLine("No point yet! Here we roll again!");
-
-            roll = RollComeOut(shooter);
+            roll = RollComeOutPhase(player);
         }
 
         var pointRoll = roll;
-        var pointHasBeenMade = false;
+        _logger.LogInformation("We're on {PointRollValue} for the point!", pointRoll.Value);
 
-        Console.WriteLine();
-        Console.WriteLine("---------------------------------------------------------");
-        Console.WriteLine($"We're on {pointRoll.Value} for the point!");
-        Console.WriteLine("---------------------------------------------------------");
+        roll = RollPointPhase(player);
 
-        roll = RollPoint(shooter);
-        while (roll.Value != 7)
+        while (true)
         {
-            // TODO: Account for bets???
-            if (roll.Value == pointRoll.Value)
+            if (roll.Value == 7)
             {
-                if (!pointHasBeenMade)
-                {
-                    Console.WriteLine($" - {shooter.Name} rolled the point!");
-                }
-
-                pointHasBeenMade = true;
+                return false;
             }
 
-            roll = RollPoint(shooter);
-        }
+            if (roll.Value == pointRoll.Value)
+            {
+                return true;
+            }
 
-        return pointHasBeenMade;
+            roll = RollPointPhase(player);
+        }
     }
 
-    public static Roll RollComeOut(Shooter shooter)
+    public Roll RollComeOutPhase(Player player)
     {
-        var roll = shooter.Throw();
-
-        Console.WriteLine();
-        Console.WriteLine($"{roll.Dice[0].Value} {roll.Dice[1].Value} ({roll.Name})");
-        // TODO: Uncomment this when it's actually filled out...
-        // Console.WriteLine(roll.FunName);
+        var roll = _rollHandler.Throw(player);
 
         // TODO: Show bet results, but put that in the Engine???
 
         return roll;
     }
 
-    public static Roll RollPoint(Shooter shooter)
+    public Roll RollPointPhase(Player player)
     {
-        var roll = shooter.Throw();
-
-        Console.WriteLine();
-        Console.WriteLine($"{roll.Dice[0].Value} {roll.Dice[1].Value} ({roll.Name})");
-        // TODO: Uncomment this when it's actually filled out...
-        // Console.WriteLine(roll.FunName);
+        var roll = _rollHandler.Throw(player);
 
         // TODO: Show bet results, but put that in the Engine???
 

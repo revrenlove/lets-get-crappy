@@ -1,6 +1,12 @@
+using RevrenLove.LetsGetCrappy.Engine.Strategies;
+
 namespace RevrenLove.LetsGetCrappy.Engine.Actors;
 
-public abstract class Player
+public class Player
 {
-    // TODO: Fill this out...
+    internal Player() { }
+
+    public string Name { get; init; } = default!;
+    public int Wallet { get; init; }
+    public IStrategy? Strategy { get; init; }
 }

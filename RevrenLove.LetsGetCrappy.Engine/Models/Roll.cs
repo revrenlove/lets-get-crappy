@@ -6,12 +6,12 @@ public class Roll
     private static readonly List<int> _naturalValues = new() { 7, 11 };
     private static readonly List<int> _pointValues = new() { 4, 5, 6, 8, 9, 10 };
 
-    public Roll(Die a, Die b)
+    public Roll(IDie a, IDie b)
     {
-        Dice = new Die[2] { a, b };
+        Dice = new IDie[2] { a, b };
     }
 
-    public Die[] Dice { get; }
+    public IDie[] Dice { get; }
     public int Value => Dice.Select(d => d.Value).Sum();
     public string Name => GetName();
     public string FunName => GetName();
